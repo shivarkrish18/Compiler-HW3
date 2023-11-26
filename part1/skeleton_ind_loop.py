@@ -63,10 +63,19 @@ def reference_loop_source(chain_length):
 # try 1,2,4,8, etc.
 def homework_loop_sequential_source(chain_length, unroll_factor):
     function = "void homework_loop_sequential(float *b, int size) {"
-    #implement me!
-    function_body = ""
+    loop = f"  for (int i = 0; i < size; i += {unroll_factor * chain_length}) {{"
+    chains = []
+    for u in range(unroll_factor):
+        chain = [f"    float tmp{u} = b[i + {u * chain_length}];"]
+        for c in range(chain_length):
+            chain.append(f"    tmp{u} += {c + 1}.0f;")
+        chain.append(f"    b[i + {u * chain_length}] = tmp{u};")
+        chains.append("\n".join(chain))
+    loop_body = "\n".join(chains)
+    loop_close = "  }"
     function_close = "}"
-    return "\n".join([function, function_body, function_close])
+    return "\n".join([function, loop, loop_body, loop_close, function_close])
+
 
 # Second homework function here! The specification for this
 # function is the same as the first homework function, except
@@ -77,10 +86,22 @@ def homework_loop_sequential_source(chain_length, unroll_factor):
 # the dependency chain also a power of two. 
 def homework_loop_interleaved_source(chain_length, unroll_factor):
     function = "void homework_loop_interleaved(float *b, int size) {"
-    #implement me!
-    function_body = ""    
+    loop = f"  for (int i = 0; i < size; i += {unroll_factor * chain_length}) {{"
+    chains_init = []
+    chains_ops = []
+    chains_store = []
+    for u in range(unroll_factor):
+        chains_init.append(f"    float tmp{u} = b[i + {u * chain_length}];")
+    for c in range(chain_length):
+        for u in range(unroll_factor):
+            chains_ops.append(f"    tmp{u} += {c + 1}.0f;")
+    for u in range(unroll_factor):
+        chains_store.append(f"    b[i + {u * chain_length}] = tmp{u};")
+    loop_body = "\n".join(chains_init + chains_ops + chains_store)
+    loop_close = "  }"
     function_close = "}"
-    return "\n".join([function, function_body, function_close])
+    return "\n".join([function, loop, loop_body, loop_close, function_close])
+
 
 # String for the main function
 main_source_string = """
