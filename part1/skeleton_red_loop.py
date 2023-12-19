@@ -53,26 +53,21 @@ def homework_reduction_source(partitions):
     # helper function to create sum statements
     def create_sum_statements(partition, num_partitions):
         return [f"    sum{partition} += a[i + {partition} + {j} * {num_partitions}];" for j in range(partitions)]
-
-    # compute number of elements per partition
-    elements_per_partition = "size / partitions"
     
+    # compute number of elements per partition
+    elements_per_partition = f"size / {partitions}"    
     # declare sum variables for each partition
     sums_declaration = "\n".join([f"    reduce_type sum{partition} = 0;" for partition in range(partitions)])
-    
-    # create the loop that processes elements in partitions
-    loop = f"  for (int i = 0; i < {elements_per_partition}; i += partitions) {{"
+    loop = f"  for (int i = 0; i < {elements_per_partition}; i += {partitions}) {{"
     
     # sum statements for all partitions
     sum_statements = "\n".join(["\n".join(create_sum_statements(partition, partitions)) for partition in range(partitions)])
-    
-    # closing brace for loop
     loop_close = "  }"
 
     # final summation of all partition sums
     final_sum = "    a[0] = 0;" + "".join([f"    a[0] += sum{partition};" for partition in range(partitions)])
 
-    # closing brace for function
+    
     function_close = "}"
 
     # joining together all parts
